@@ -44,6 +44,7 @@ profiles = []
 
 for root, dirs, files in os.walk(profiles_path, topdown=False):
     print("".join("*" * 25))
+    print("root:", root)
     for name in files:
         if name != "config.txt":
             continue
@@ -54,6 +55,7 @@ for root, dirs, files in os.walk(profiles_path, topdown=False):
             lines = fp.readlines()
 
         cells = []
+        key_doc = []
         for i in range(1, 16):
             z1_text = get_btn_value(lines, f"z{i}")
             z1_color = get_btn_value(lines, f"SWCOLOR_{i}")
@@ -85,6 +87,16 @@ for root, dirs, files in os.walk(profiles_path, topdown=False):
 
             cells.append(cell)
 
+            key_name = os.path.join(root, f"key{i}.txt")
+            if os.path.exists:
+                with open(key_name, "r", encoding="utf8") as kfp:
+                    key_lines = kfp.readlines()
+
+                for key_line in key_lines:
+                    if key_line.startswith("REM DOC:"):
+                        key_line = key_line[8:]
+                        key_doc.append({"key": z1_text, "doc": key_line})
+
         table = f"\n|       |       |       |\n| :----------: | :----------: | :----------: |\n| {cells[0]} | {cells[1]} | {cells[2]} |\n| {cells[3]} | {cells[4]} | {cells[5]} |\n| {cells[6]} | {cells[7]} | {cells[8]} |\n| {cells[9]} | {cells[10]} | {cells[11]} |\n| {cells[12]} | {cells[13]} | {cells[14]} |\n\n"
 
         profile_name = root.split("_")[-1]
@@ -92,14 +104,22 @@ for root, dirs, files in os.walk(profiles_path, topdown=False):
         index = None
         if profile_index.group(1):
             index = int(profile_index.group(1))
-        profiles.append({"name": profile_name, "index": index, "table": table})
+        profiles.append(
+            {"name": profile_name, "index": index, "table": table, "doc": key_doc}
+        )
 
 profiles = sorted(profiles, key=lambda d: d["index"])
 
 with open("tables.md", "w", encoding="utf8") as fp:
     fp.write("\n")
     for profile in profiles:
-        fp.write(f'# Profile {profile["index"]}: {profile["name"]}')
-        fp.write("\n")
+        fp.write(f'# Profile {profile["index"]}: {profile["name"]}\n\n')
+        if profile["doc"]:
+            fp.write("Key descriptions:\n")
+            for doc_line in profile["doc"]:
+                fp.write(
+                    f"* {doc_line['key'].replace('&nbsp;', '')}: {doc_line['doc'].strip()}\n"
+                )
+            fp.write("\n")
         fp.write(profile["table"])
         fp.write("\n")
