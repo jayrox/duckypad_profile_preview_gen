@@ -56,7 +56,7 @@ for root, dirs, files in os.walk(profiles_path, topdown=False):
 
         cells = []
         key_doc = []
-        for i in range(1, 16):
+        for i in range(1, 21):
             z1_text = get_btn_value(lines, f"z{i}")
             z1_color = get_btn_value(lines, f"SWCOLOR_{i}")
 
